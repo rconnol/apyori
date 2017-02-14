@@ -4,7 +4,7 @@ from datetime import date
 
 
 def prepare_transactions(filepath=None, TID_cols=None, item_col=None,
-                         stores=None, remove_non_sales=True):
+                         remove_items=None):
     """
     TID_cols -> is a list of columns to concat and create unique TID
     item_col -> the column id that holds the items, or hierarchy to analyze
@@ -13,14 +13,8 @@ def prepare_transactions(filepath=None, TID_cols=None, item_col=None,
     data = pd.read_excel(filepath)
     data['TID'] = ''
 
-    non_sales_teams = ['Containers', 'Coupons', 'Customer Services', 'Promo',
-                       'Unidentified Items']
-
-    if stores is not None:
-        data = data[data.loc[:, 'Store'].isin(stores)]
-
-    if remove_non_sales is True:
-        data = data[~data.loc[:, '01 Family'].isin(non_sales_teams)]
+    if remove_items:
+        data = data[~data.loc[:, remove_items].isin(non_sales_teams)]
 
     for column_name in TID_cols:
 
@@ -154,8 +148,8 @@ def apriori(data, min_support=None):
     while loop is True:
 
         candidates = new_generate_candidates(data,
-                                             freq_itemset= freq_itemset,
-                                             k = k)
+                                             freq_itemset=freq_itemset,
+                                             k=k)
         
         next_freq_itemset = prune_candidates(candidates, min_support=min_support)
 
@@ -232,7 +226,7 @@ def association_rules(data, freq_itemset=None):
     return arules, n
 
 
-def calculate_arules(arules, n):
+def calculate_arules(arules, n, min_confidence):
 
     arulesDF = pd.DataFrame(arules).T
 
@@ -240,25 +234,18 @@ def calculate_arules(arules, n):
     arulesDF['Confidence'] = arulesDF['Frequency XY'] / arulesDF['Frequency X']
     arulesDF['Lift'] = arulesDF['Support'] / ((arulesDF['Frequency X']/n) * (arulesDF['Frequency Y']/n))
 
+    arulesDF = arulesDF.loc[arulesDF['Confidence']>min_confidence]
     arules = arulesDF.loc[: , ['Items', 'Target', 'Support', 'Confidence', 'Lift']]
 
     return arules
 
 
-if __name__ == '__main__':
-        
-    data = prepare_transactions(filepath="TRX_2016_12_28-2017_01_03.xlsx", 
-        TID_cols=['Date', 'Unnamed: 2', 'Unnamed: 4', 'Transaction Time', 'Store'], 
-        item_col='02 Category',
-        # stores=['Silver Lake'],#, 'Lake Oswego', 'Bellevue Square'],
-        stores=['Bellevue Square'],
-        remove_non_sales=True)
+def main():
 
-#    data = prepare_transactions(filepath="TRX_Apriori_Test.xlsx", 
-#        TID_cols=['Transaction'], 
-#        item_col='item',
-#        stores=None,
-#        remove_non_sales=False)
+    data = prepare_transactions(filepath=,#make sysarg
+        TID_cols=,#sysarg 
+        item_col=,#sysarg
+        remove_items=None)
 
     items = apriori(data, min_support=2)
 
@@ -267,3 +254,7 @@ if __name__ == '__main__':
     arulesDF = calculate_arules(arules, n)
 
     arulesDF.to_excel('Arules.xlsx')
+
+
+if __name__ == '__main__':
+    main()
