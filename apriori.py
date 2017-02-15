@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 import itertools as IT
 from datetime import date
@@ -240,11 +241,11 @@ def calculate_arules(arules, n, min_confidence):
     return arules
 
 
-def main():
+def main(filepath, TID_cols, item_col, output_file, remove_items=None):
 
-    data = prepare_transactions(filepath=,#make sysarg
-        TID_cols=,#sysarg 
-        item_col=,#sysarg
+    data = prepare_transactions(filepath=filepath,
+        TID_cols=TID_cols,
+        item_col=item_col,
         remove_items=None)
 
     items = apriori(data, min_support=2)
@@ -253,8 +254,12 @@ def main():
 
     arulesDF = calculate_arules(arules, n)
 
-    arulesDF.to_excel('Arules.xlsx')
+    arulesDF.to_excel(output_file)
 
 
 if __name__ == '__main__':
-    main()
+    
+    main(filepath=sys.argv[1],
+        TID_cols=sys.argv[2],
+        item_col=sys.argv[3],
+        output_file=sys.argv[4])
